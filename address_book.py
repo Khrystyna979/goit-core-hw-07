@@ -1,5 +1,5 @@
 from collections import UserDict
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from record import Record
 
 class AddressBook(UserDict):
@@ -29,38 +29,36 @@ class AddressBook(UserDict):
         today = date.today()
 
         for user in self.data.values():
+            if user.birthday is None:
+                continue
 
-            birthday_this_year = user.birthday.value.replace(year=today.year)
+            try:
+                birthday_date_obj = datetime.strptime(user.birthday.value, "%d.%m.%Y").date()
+            except ValueError:
+                continue 
+
+            birthday_this_year = birthday_date_obj.replace(year=today.year)
+
+            start_of_period = today
+            end_of_period = today + timedelta(days=days)
 
             if birthday_this_year < today:
-                birthday_next_year = user.birthday.value.replace(year=today.year + 1)
-
-            if 0 <= (birthday_this_year - today).days <= days: 
-
-                if birthday_this_year.weekday() >= 5:
-                    days_ahead = weekday - birthday_this_year.weekday()
-                    
-                    if days_ahead <= 0:
-                        days_ahead += 7
-                        birthday_this_year += timedelta(days=days_ahead)
-                        upcoming_birthdays.append({
-                            "Name": user.name.value, 
-                            "Congratulation date": birthday_this_year.strftime("%Y.%m.%d")
-                            })
+                birthday_check = birthday_date_obj.replace(year=today.year + 1)
+            else:
+                birthday_check = birthday_this_year
             
-            elif (birthday_next_year - today).days in range(0, 8):
+            if start_of_period <= birthday_check < end_of_period:
+                congratulation_date = birthday_check
+                day_of_week = birthday_check.weekday() 
 
-                if birthday_next_year.weekday() >= 5:
-                    days_ahead = weekday - birthday_next_year.weekday()
+                if day_of_week >= 5: 
 
-                    if days_ahead <= 0:
-                        days_ahead += 7
-                        birthday_next_year += timedelta(days=days_ahead)
-                        upcoming_birthdays.append({
-                            "Name": user.name.value, 
-                            "Congratulation date": birthday_next_year.strftime("%Y.%m.%d")
-                            })
-            
+                    days_to_monday = (7 - day_of_week) + weekday 
+                    congratulation_date += timedelta(days=days_to_monday)
+
+                upcoming_birthdays.append({
+                    "Name": user.name.value, 
+                    "Congratulation date": congratulation_date.strftime("%d.%m.%Y")
+                })
+                
         return upcoming_birthdays
-
-

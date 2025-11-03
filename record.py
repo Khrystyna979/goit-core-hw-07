@@ -22,7 +22,7 @@ class Birthday(Field):
     def __init__(self, value):
         super().__init__(value)
         try:
-            self.value = datetime.strptime(value, '%d.%m.%Y').date()
+            datetime.strptime(value, '%d.%m.%Y').date()
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
              
@@ -63,13 +63,9 @@ class Record:
             raise ValueError('The input data is incorrect.')
         
     def add_birthday(self, birthday):
-        try:
-            self.birthday  = Birthday(birthday) 
-            print("Birthday added")
-            return self.birthday
-        except ValueError as e:
-            print(e)
-            return None
+        self.birthday = Birthday(birthday) 
+        
+        return self.birthday
 
     def show_birthday(self):
         return f'Contact name: {self.name.value}, birthday: {self.birthday}'

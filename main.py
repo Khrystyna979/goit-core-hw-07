@@ -30,6 +30,8 @@ def input_error(func):
             return 'Contact with this name not found.'
         except IndexError:
             return 'Please provide all required information.'
+        except AttributeError:
+            return 'Contact not found.'
 
     return inner
 
@@ -67,8 +69,6 @@ def change_contact_phone(args, book: AddressBook):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
 
-    if record is None:
-        return 'Contact not found'
     if old_phone and new_phone:
         record.edit_phone(old_phone, new_phone)
 
@@ -81,10 +81,8 @@ def show_phone(args, book: AddressBook):
     """
     name, *_ = args
     record = book.find(name)
-    if record is None:
-        return 'Contact not found'
-    else:
-        return record.show_phone_by_name()
+    
+    return record.show_phone_by_name()
     
 @input_error
 def delete(args, book: AddressBook):
@@ -93,8 +91,7 @@ def delete(args, book: AddressBook):
     """
     name, *_ = args
     record = book.find(name)
-    if record is None:
-        return 'Contact not found'
+
     book.delete(name)
     return 'Contact deleted'
 
@@ -112,9 +109,10 @@ def add_birthday(args, book: AddressBook):
     """
     name, date_of_birth, *_ = args
     record = book.find(name)
-    if record is None:
-        return 'Contact not found'
+
     record.add_birthday(date_of_birth)
+
+    return 'Birthday added.'
 
 @input_error
 def show_birthday(args, book: AddressBook):
@@ -123,8 +121,7 @@ def show_birthday(args, book: AddressBook):
     """
     name, *_ = args
     record = book.find(name)
-    if record is None:
-        return 'Contact not found'
+
     return record.show_birthday()
 
 @input_error
@@ -132,7 +129,12 @@ def birthdays(book: AddressBook):
     """
     Function that show birthdays for the next 7 days with the dates when they should be congratulated
     """
-    return book.get_upcoming_birthdays()
+    birthdays_list = book.get_upcoming_birthdays()
+    
+    if not birthdays_list:
+        return 'There is no upcoming birthdays'
+    
+    return birthdays_list
 
 def main():
     """
